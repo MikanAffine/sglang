@@ -243,7 +243,51 @@ def _resolve_warmup_num_frames(
         # use default num frames
         return num_frames
 
-    return min(num_frames, SERVER_WARMUP_MAX_VIDEO_FRAMES)
+    return _align_causal_warmup_num_frames(
+        server_args, min(num_frames, SERVER_WARMUP_MAX_VIDEO_FRAMES)
+    )
+
+
+def _align_causal_warmup_num_frames(server_args: ServerArgs, num_frames: int) -> int:
+    pipeline_config = server_args.pipeline_config
+    if not _is_causal_forcing_pipeline(server_args):
+        return num_frames
+
+    arch_config = getattr(
+        getattr(pipeline_config, "dit_config", None), "arch_config", None
+    )
+    num_frames_per_block = int(getattr(arch_config, "num_frames_per_block", 0) or 0)
+    if num_frames_per_block <= 1:
+        return num_frames
+
+    vae_config = getattr(pipeline_config, "vae_config", None)
+    if not getattr(vae_config, "use_temporal_scaling_frames", False):
+        return num_frames
+
+    vae_arch_config = getattr(vae_config, "arch_config", None)
+    temporal_scale_factor = int(
+        getattr(vae_arch_config, "temporal_compression_ratio", 1) or 1
+    )
+    if temporal_scale_factor <= 1:
+        return num_frames
+
+    latent_num_frames = (num_frames - 1) // temporal_scale_factor + 1
+    if latent_num_frames % num_frames_per_block == 0:
+        return num_frames
+
+    aligned_latent_frames = max(
+        num_frames_per_block,
+        (latent_num_frames // num_frames_per_block) * num_frames_per_block,
+    )
+    return (aligned_latent_frames - 1) * temporal_scale_factor + 1
+
+
+def _is_causal_forcing_pipeline(server_args: ServerArgs) -> bool:
+    return (
+        server_args.pipeline_class_name == "WanCausalForcingPipeline"
+        or server_args.pipeline_config.__class__.__name__
+        == "CausalForcingWanT2V480PConfig"
+    )
 
 
 def _effective_cfg_scale(sampling_defaults: SamplingParams) -> float | None:

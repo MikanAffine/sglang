@@ -285,3 +285,12 @@ class Turbo_Wan2_2_I2V_A14B_SamplingParam(Wan2_2_Base_SamplingParams):
 @dataclass
 class SelfForcingWanT2V480PConfig(WanT2V_1_3B_SamplingParams):
     pass
+
+
+@dataclass
+class CausalForcingWanT2V480PConfig(SelfForcingWanT2V480PConfig):
+    """Sampling defaults for Causal Forcing chunkwise 4-step Wan T2V."""
+
+    num_inference_steps: int = 4
+    num_frames: int = 81
+    adjust_frames: bool = False

@@ -273,3 +273,10 @@ class SelfForcingWanT2V480PConfig(WanT2V480PConfig):
         default_factory=lambda: [1000, 750, 500, 250]
     )
     warp_denoising_step: bool = True
+
+
+@dataclass
+class CausalForcingWanT2V480PConfig(SelfForcingWanT2V480PConfig):
+    """Wan T2V config for Causal Forcing chunkwise 4-step checkpoints."""
+
+    context_noise: int = 0

@@ -88,6 +88,7 @@ from sglang.multimodal_gen.configs.pipeline_configs.stablediffusion3 import (
     StableDiffusion3PipelineConfig,
 )
 from sglang.multimodal_gen.configs.pipeline_configs.wan import (
+    CausalForcingWanT2V480PConfig,
     FastWan2_1_T2V_480P_Config,
     FastWan2_2_TI2V_5B_Config,
     TurboWanI2V720Config,
@@ -148,6 +149,7 @@ from sglang.multimodal_gen.configs.sample.stablediffusion3 import (
     StableDiffusion3SamplingParams,
 )
 from sglang.multimodal_gen.configs.sample.wan import (
+    CausalForcingWanT2V480PConfig as CausalForcingWanT2V480PSamplingParams,
     FastWanT2V480PConfig,
     Turbo_Wan2_2_I2V_A14B_SamplingParam,
     Wan2_1_Fun_1_3B_InP_SamplingParams,
@@ -769,6 +771,17 @@ def _register_configs():
         pipeline_config_cls=FastWan2_1_T2V_480P_Config,
         hf_model_paths=[
             "FastVideo/FastWan2.1-T2V-1.3B-Diffusers",
+        ],
+    )
+    register_configs(
+        sampling_param_cls=CausalForcingWanT2V480PSamplingParams,
+        pipeline_config_cls=CausalForcingWanT2V480PConfig,
+        hf_model_paths=[
+            "thu-ml/Causal-Forcing",
+        ],
+        model_detectors=[
+            lambda hf_id: "causal-forcing" in hf_id.lower()
+            or "wancausalforcingpipeline" in hf_id.lower()
         ],
     )
     # MOVA
