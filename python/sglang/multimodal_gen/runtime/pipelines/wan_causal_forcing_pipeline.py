@@ -9,6 +9,7 @@ from sglang.multimodal_gen.configs.pipeline_configs.wan import (
 from sglang.multimodal_gen.configs.sample.wan import (
     CausalForcingWanT2V480PConfig as CausalForcingWanT2V480PSamplingParams,
 )
+from sglang.multimodal_gen.runtime.disaggregation.roles import RoleType
 from sglang.multimodal_gen.runtime.models.schedulers.scheduling_self_forcing_flow_match import (
     SelfForcingFlowMatchScheduler,
 )
@@ -60,11 +61,16 @@ class WanCausalForcingPipeline(LoRAPipeline, ComposedPipelineBase):
         self.add_stage(DMDTimestepPreparationStage(self.get_module("scheduler")))
         self.add_standard_latent_preparation_stage()
 
-        self.add_stage(
-            CausalForcingDMDDenoisingStage(
+        def create_denoising_stage():
+            return CausalForcingDMDDenoisingStage(
                 transformer=self.get_module("transformer"),
                 scheduler=self.get_module("scheduler"),
-            ),
+            )
+
+        self.add_stage_factory(
+            RoleType.DENOISER,
+            create_denoising_stage,
+            "CausalForcingDMDDenoisingStage",
         )
 
         self.add_standard_decoding_stage()

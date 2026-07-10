@@ -107,6 +107,22 @@ def test_wan_causal_forcing_pipeline_uses_causal_forcing_specific_denoising_stag
     assert "Causal Forcing-specific" in stage_source
 
 
+def test_wan_causal_forcing_pipeline_defers_denoiser_construction_by_role():
+    source = WAN_CAUSAL_FORCING_PIPELINE.read_text(encoding="utf-8")
+
+    factory_start = source.index("        def create_denoising_stage()")
+    factory_body = source[
+        factory_start : source.index("        self.add_standard_decoding_stage()")
+    ]
+
+    assert "RoleType" in source
+    assert "return CausalForcingDMDDenoisingStage(" in factory_body
+    assert "self.add_stage_factory(" in factory_body
+    assert "RoleType.DENOISER," in factory_body
+    assert "create_denoising_stage," in factory_body
+    assert '"CausalForcingDMDDenoisingStage",' in factory_body
+
+
 def test_causal_forcing_denoising_uses_declared_transformer_lifecycle():
     source = CAUSAL_FORCING_DENOISING_STAGE.read_text(encoding="utf-8")
     forward_start = source.index("    def forward(")
