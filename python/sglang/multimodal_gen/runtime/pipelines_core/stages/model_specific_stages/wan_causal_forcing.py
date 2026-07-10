@@ -620,6 +620,22 @@ class CausalForcingDMDDenoisingStage(CausalDMDDenoisingStage):
         batch: Req,
         server_args: ServerArgs,
     ) -> Req:
+        component_name = self._component_name_for_stage_module(
+            self.transformer, "transformer"
+        )
+        with self.use_declared_component(
+            component_name=component_name,
+            module=self.transformer,
+        ) as transformer:
+            assert transformer is not None
+            self.transformer = transformer
+            return self._forward_with_resident_transformer(batch, server_args)
+
+    def _forward_with_resident_transformer(
+        self,
+        batch: Req,
+        server_args: ServerArgs,
+    ) -> Req:
         ctx = self._prepare_causal_dmd_forward_context(batch, server_args)
         target_dtype = ctx.target_dtype
         autocast_enabled = ctx.autocast_enabled
@@ -629,7 +645,7 @@ class CausalForcingDMDDenoisingStage(CausalDMDDenoisingStage):
         image_kwargs = ctx.image_kwargs
         pos_cond_kwargs = ctx.pos_cond_kwargs
         neg_cond_kwargs = ctx.neg_cond_kwargs
-        latents = ctx.latents
+        latents = ctx.latents.clone()
         prompt_embeds = ctx.prompt_embeds
         negative_prompt_embeds = ctx.negative_prompt_embeds
         t, h, w = ctx.num_frames, ctx.height, ctx.width

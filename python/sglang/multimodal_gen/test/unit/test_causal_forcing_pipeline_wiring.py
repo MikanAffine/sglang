@@ -107,6 +107,27 @@ def test_wan_causal_forcing_pipeline_uses_causal_forcing_specific_denoising_stag
     assert "Causal Forcing-specific" in stage_source
 
 
+def test_causal_forcing_denoising_uses_declared_transformer_lifecycle():
+    source = CAUSAL_FORCING_DENOISING_STAGE.read_text(encoding="utf-8")
+    forward_start = source.index("    def forward(")
+    forward_body = source[forward_start:]
+
+    assert "self._component_name_for_stage_module(" in forward_body
+    assert "with self.use_declared_component(" in forward_body
+    assert "component_name=component_name," in forward_body
+    assert "module=self.transformer," in forward_body
+    assert (
+        "return self._forward_with_resident_transformer(batch, server_args)"
+        in forward_body
+    )
+
+
+def test_causal_forcing_clones_latents_before_inplace_chunk_updates():
+    source = CAUSAL_FORCING_DENOISING_STAGE.read_text(encoding="utf-8")
+
+    assert "latents = ctx.latents.clone()" in source
+
+
 def test_wan_causal_forcing_pipeline_exposes_config_classes_for_discovery():
     source = WAN_CAUSAL_FORCING_PIPELINE.read_text(encoding="utf-8")
     class_start = source.index("class WanCausalForcingPipeline")
