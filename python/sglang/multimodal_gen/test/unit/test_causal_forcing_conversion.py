@@ -43,7 +43,7 @@ REPRESENTATIVE_CONVERTED_TENSOR_KEYS = [
 ]
 
 
-def test_select_generator_state_dict_prefers_ema():
+def test_select_generator_state_dict_prefers_generator():
     generator = {"model.weight": object()}
     generator_ema = {"model.weight": object()}
 
@@ -51,19 +51,19 @@ def test_select_generator_state_dict_prefers_ema():
         {"generator": generator, "generator_ema": generator_ema}
     )
 
-    assert selected is generator_ema
-
-
-def test_select_generator_state_dict_falls_back_to_generator():
-    generator = {"model.weight": object()}
-
-    selected = select_generator_state_dict({"generator": generator})
-
     assert selected is generator
 
 
+def test_select_generator_state_dict_falls_back_to_generator_ema():
+    generator_ema = {"model.weight": object()}
+
+    selected = select_generator_state_dict({"generator_ema": generator_ema})
+
+    assert selected is generator_ema
+
+
 def test_select_generator_state_dict_requires_known_key():
-    with pytest.raises(KeyError, match="generator_ema"):
+    with pytest.raises(KeyError, match="generator"):
         select_generator_state_dict({"model.weight": object()})
 
 

@@ -347,7 +347,8 @@ def test_causal_forcing_defaults_match_chunkwise_four_step_latent_shape():
     assert "num_inference_steps: int = 4" in class_body
     assert "num_frames: int = 81" in class_body
     assert "adjust_frames: bool = False" in class_body
-    assert "guidance_scale: float = 1.0" not in class_body
+    assert "guidance_scale: float = 1.0" in class_body
+    assert "negative_prompt: str | None = None" in class_body
 
     assert "[1000, 750, 500, 250]" in pipeline_source
     assert "context_noise: int = 0" in pipeline_source

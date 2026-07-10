@@ -103,8 +103,8 @@ WRAPPER_PREFIXES = (
 
 def select_generator_state_dict(
     checkpoint: Mapping[str, Any],
-    state_key: str = "generator_ema",
-    fallback_state_key: str | None = "generator",
+    state_key: str = "generator",
+    fallback_state_key: str | None = "generator_ema",
 ) -> Mapping[str, Any]:
     if not isinstance(checkpoint, Mapping):
         raise TypeError("Checkpoint must be a mapping")
@@ -437,8 +437,8 @@ def get_args() -> argparse.Namespace:
             "text_encoder, tokenizer, and vae component overrides"
         ),
     )
-    parser.add_argument("--state-key", default="generator_ema")
-    parser.add_argument("--fallback-state-key", default="generator")
+    parser.add_argument("--state-key", default="generator")
+    parser.add_argument("--fallback-state-key", default="generator_ema")
     parser.add_argument("--output-name", default=DEFAULT_OUTPUT_NAME)
     parser.add_argument(
         "--validate-only",

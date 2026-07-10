@@ -291,6 +291,8 @@ class SelfForcingWanT2V480PConfig(WanT2V_1_3B_SamplingParams):
 class CausalForcingWanT2V480PConfig(SelfForcingWanT2V480PConfig):
     """Sampling defaults for Causal Forcing chunkwise 4-step Wan T2V."""
 
+    guidance_scale: float = 1.0
+    negative_prompt: str | None = None
     num_inference_steps: int = 4
     num_frames: int = 81
     adjust_frames: bool = False

@@ -76,7 +76,8 @@ Remote/Linux validation needed:
 Added a minimal conversion path for the reference `.pt` generator checkpoint:
 
 - Added `tools/convert_causal_forcing_checkpoint.py`.
-- The tool selects `generator_ema` by default, falling back to `generator`.
+- The tool selects `generator` by default, matching the official chunk-wise
+  inference command, and falls back to `generator_ema`.
 - It normalizes reference wrapper keys from `model._fsdp_wrapped_module.*` or
   `model.*` to component-local names.
 - It converts official Wan module names to the Diffusers-style names expected by

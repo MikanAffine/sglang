@@ -16,6 +16,13 @@ from sglang.multimodal_gen.registry import (
 from sglang.utils import is_known_non_diffusers_diffusion_model
 
 
+def test_causal_forcing_sampling_defaults_disable_cfg():
+    sampling_params = CausalForcingWanT2V480PSamplingParams()
+
+    assert sampling_params.guidance_scale == 1.0
+    assert sampling_params.negative_prompt is None
+
+
 def test_registry_resolves_causal_forcing_checkpoint_to_native_pipeline():
     get_model_info.cache_clear()
     _get_config_info.cache_clear()
