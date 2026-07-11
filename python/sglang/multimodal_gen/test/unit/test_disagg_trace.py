@@ -134,6 +134,23 @@ class TestDisaggTracePropagation(unittest.TestCase):
             actual = torch.rand((), generator=generator)
             self.assertEqual(actual.item(), expected.item())
 
+    @unittest.skipUnless(torch.cuda.is_available(), "CUDA is not available")
+    def test_build_disagg_req_respects_cuda_generator_device(self):
+        scalar_fields = {
+            "request_id": "test-cuda-generator",
+            "prompt": "x",
+            "seed": 42,
+            "generator_device": "cuda",
+        }
+
+        rebuilt = SchedulerDisaggMixin._build_disagg_req(
+            None, dict(scalar_fields), {}
+        )
+
+        self.assertEqual(rebuilt.generator.device.type, "cuda")
+        noise = torch.randn((1,), device="cuda", generator=rebuilt.generator)
+        self.assertEqual(noise.device.type, "cuda")
+
     def test_tracing_disabled_omits_trace_state(self):
         """With a default TraceNullContext Req, no _trace_state is emitted and
         the JSON codec does not encounter any live OTel objects."""

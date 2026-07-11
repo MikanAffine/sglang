@@ -1327,16 +1327,26 @@ class SchedulerDisaggMixin:
         # Set tensor fields
         for key, value in tensors.items():
             setattr(req, key, value)
-        # Recreate torch.Generator from seed (not serializable over transfer)
+        # Recreate torch.Generator from seed (not serializable over transfer).
+        # Respect the request's generator device so downstream GPU stages can
+        # use it directly with CUDA tensors. Keep CPU as the fallback for
+        # requests created before generator_device was propagated.
         seed = scalar_fields.get("seed")
         if seed is not None:
+            generator_device = getattr(req, "generator_device", None)
+            if generator_device is None or generator_device == "cpu":
+                generator_device = "cpu"
+            else:
+                generator_device = current_platform.device_type
             if isinstance(seed, list):
                 req.generator = [
-                    torch.Generator(device="cpu").manual_seed(int(item))
+                    torch.Generator(device=generator_device).manual_seed(int(item))
                     for item in seed
                 ]
             else:
-                req.generator = torch.Generator(device="cpu").manual_seed(int(seed))
+                req.generator = torch.Generator(device=generator_device).manual_seed(
+                    int(seed)
+                )
         # Rebuild trace_ctx from the propagated __getstate__ dict so this role's
         # spans nest under the sender's trace (same mechanism SRT uses via pickle).
         if trace_state and trace_state.get("tracing_enable"):
